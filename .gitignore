@@ -11,6 +11,19 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+/.yarn
+/.nx
+.yarnrc.yml
+
 # OS
 .DS_Store
 
