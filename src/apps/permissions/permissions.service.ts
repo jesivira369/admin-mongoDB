@@ -3,6 +3,7 @@ import { Permission } from './schemas/permission.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { PermissionDto } from './dto/permission.dto';
+import { PermissionUpdateDto } from './dto/permissionUpdate.dto';
 
 @Injectable()
 export class PermissionsService {
@@ -31,7 +32,7 @@ export class PermissionsService {
     return this.permissionModel.find(filter);
   }
 
-  async updatePermission(permission: any) {
+  async updatePermission(permission: PermissionUpdateDto) {
     const { originalName, newName } = permission;
 
     const permissionExists = await this.findPermissionByName(originalName);
