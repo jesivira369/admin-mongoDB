@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import configuration from './configuration/configuration';
 import { PermissionsModule } from './apps/permissions/permissions.module';
+import { RolesModule } from './apps/roles/roles.module';
 
 @Module({
   
@@ -20,6 +21,7 @@ import { PermissionsModule } from './apps/permissions/permissions.module';
       inject: [ConfigService], // Make sure to inject the ConfigService
     }),
     PermissionsModule,
+    RolesModule,
   ],
   controllers: [],
   providers: [],

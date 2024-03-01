@@ -3,65 +3,68 @@ import { Permission } from './schemas/permission.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { PermissionDto } from './dto/permission.dto';
+import { PermissionUpdateDto } from './dto/permissionUpdate.dto';
 
 @Injectable()
 export class PermissionsService {
+  constructor(@InjectModel(Permission.name) private readonly permissionModel: Model<Permission>) {}
 
-    constructor(
-        @InjectModel(Permission.name) private readonly permissionModel: Model<Permission>
-    ) { }
+  async createPermission(permission: PermissionDto) {
+    const permissionExists = await this.findPermissionByName(permission.name);
 
-    async createPermission(permission: PermissionDto) {
-
-        const permissionExists = await this.permissionModel.findOne({ name: permission.name });
-
-        if (permissionExists) {
-            throw new ConflictException('Permission already exists');
-        }
-
-        const p = new this.permissionModel(permission);
-
-        return p.save();
+    if (permissionExists) {
+      throw new ConflictException('Permission already exists');
     }
 
-    async getPermissions(name: string) {
-        const filter = {};
-        if (name) {
-            filter['name'] = {
-                $regex: name,
-                $options: 'i'
-            }
-        }
-        return this.permissionModel.find(filter);
+    const p = new this.permissionModel(permission);
+
+    return p.save();
+  }
+
+  async getPermissions(name: string) {
+    const filter = {};
+    if (name) {
+      filter['name'] = {
+        $regex: name,
+        $options: 'i',
+      };
+    }
+    return this.permissionModel.find(filter);
+  }
+
+  async updatePermission(permission: PermissionUpdateDto) {
+    const { originalName, newName } = permission;
+
+    const permissionExists = await this.findPermissionByName(originalName);
+
+    if (!permissionExists) {
+      throw new ConflictException('Permission does not exist');
     }
 
-    async updatePermission(permission: any) {
-        const { originalName, newName } = permission;
+    const permissionWithNewName = await this.findPermissionByName(newName);
 
-        const permissionExists = await this.permissionModel.findOne({ name: originalName });
-
-        if (!permissionExists) {
-            throw new ConflictException('Permission does not exist');
-        }
-
-        const permissionWithNewName = await this.permissionModel.findOne({ name: newName });
-
-        if (permissionWithNewName) {
-            throw new ConflictException('Permission with new name already exists');
-        }
-
-        await this.permissionModel.updateOne({ name: originalName }, { name: newName });
-
-        return this.permissionModel.findById(permissionExists._id);
+    if (permissionWithNewName) {
+      throw new ConflictException('Permission with new name already exists');
     }
 
-    async deletePermission(name: string) {
-        const permissionExists = await this.permissionModel.findOne({ name });
+    await this.permissionModel.updateOne({ name: originalName }, { name: newName });
 
-        if (!permissionExists) {
-            throw new ConflictException('Permission does not exist');
-        }
+    return this.permissionModel.findById(permissionExists._id);
+  }
 
-        return this.permissionModel.deleteOne({ name });
+  async deletePermission(name: string) {
+    const permissionExists = await this.findPermissionByName(name);
+
+    if (!permissionExists) {
+      throw new ConflictException('Permission does not exist');
     }
+
+    return this.permissionModel.deleteOne({ name });
+  }
+
+  findPermissionByName(name: string) {
+    return this.permissionModel.findOne({
+      name,
+    });
+  }
 }

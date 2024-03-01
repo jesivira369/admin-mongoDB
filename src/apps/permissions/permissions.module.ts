@@ -14,6 +14,7 @@ import { Permission, permissionSchema } from './schemas/permission.schema';
     ])
   ],
   controllers: [PermissionsController],
-  providers: [PermissionsService]
+  providers: [PermissionsService],
+  exports: [PermissionsService]
 })
 export class PermissionsModule {}
