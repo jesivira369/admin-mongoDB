@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import configuration from './configuration/configuration';
 import { PermissionsModule } from './apps/permissions/permissions.module';
 import { RolesModule } from './apps/roles/roles.module';
+import { UsersModule } from './apps/users/users.module';
 
 @Module({
   
@@ -18,10 +19,11 @@ import { RolesModule } from './apps/roles/roles.module';
       useFactory: async (configService: ConfigService) => ({
         uri: `mongodb://${encodeURIComponent(configService.get<string>('mongo.user'))}:${encodeURIComponent(configService.get<string>('mongo.password'))}@${configService.get<string>('mongo.host')}:${configService.get<string>('mongo.port')}/${configService.get<string>('mongo.database')}?authSource=admin`,
       }),
-      inject: [ConfigService], // Make sure to inject the ConfigService
+      inject: [ConfigService],
     }),
     PermissionsModule,
     RolesModule,
+    UsersModule
   ],
   controllers: [],
   providers: [],
