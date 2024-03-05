@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { Model, Types } from 'mongoose';
@@ -10,6 +10,7 @@ import { UserRoleDto } from './dto/user-role.dto';
 export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @Inject(forwardRef(() => RolesService))
     private rolesService: RolesService
   ) {}
 
@@ -241,5 +242,34 @@ export class UsersService {
     
         return this.findUserByUserCode(userCode);
     }
+
+    async numbersUsers(roleName: string) {
+        const usersWithRole = await this.userModel.aggregate([
+            {
+                $lookup: {
+                    from: 'roles',
+                    localField: 'role',
+                    foreignField: '_id',
+                    as: 'role',
+                },
+            },
+            {
+                $match: {
+                    'role.name': roleName.trim().toUpperCase(),
+                },
+            },
+            {
+                $count: 'total',
+            },
+        ]);
+
+        if (usersWithRole.length > 0) {
+            return usersWithRole[0].total;
+        } else {
+            return 0;
+        }
+
+    }
+
 
 }

@@ -1,17 +1,20 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Role } from './schemas/role.schema';
 import { Model, Types } from 'mongoose';
 import { PermissionsService } from '../permissions/permissions.service';
 import { RoleDto } from './dto/roles.dto';
 import { PermissionDto } from '../permissions/dto/permission.dto';
+import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class RolesService {
 
     constructor(
         @InjectModel(Role.name) private readonly roleModel: Model<Role>,
-        private readonly permissionsService: PermissionsService
+        private readonly permissionsService: PermissionsService,
+        @Inject(forwardRef(() => UsersService))
+        private readonly usersService: UsersService
     ) {}
 
     findRoleByName(name: string) {
@@ -141,6 +144,12 @@ export class RolesService {
         if (!roleExists) {
             throw new ConflictException('Role does not exist');
         }
+
+        const usersWithRole = await this.usersService.numbersUsers(name);
+
+        if (usersWithRole > 0) {
+            throw new ConflictException(`Role ${name} is assigned to ${usersWithRole} users`);
+        } 
 
         return roleExists.deleteOne();
     }
